@@ -38,12 +38,17 @@ using System.Windows.Forms;
 
 namespace SysProgrExamRastvorov
 {
+
     public partial class Form1 : Form
     {
+
         public Form1()
         {
             InitializeComponent();
         }
+
+        List<FileInfo> txtFiles;
+        string resultPath = "D:\\resultFolder\\";
 
         int maxFiles, currentFiles = 0, maxFolders, currenttFolders = 0;
 
@@ -56,20 +61,59 @@ namespace SysProgrExamRastvorov
 
         private void button1_Click(object sender, EventArgs e)
         {
+            
+
+            // работаем с файлами и каталогами
             try
             {
                 maxFolders = int.Parse(MaxFoldersBox.Text);
                 maxFiles = int.Parse(MaxFilesBox.Text);
                 currentFiles = currenttFolders = 0;
                 treeView1.Nodes.Clear();
-                FolderBrowserDialog fbd = new FolderBrowserDialog();
-                fbd.Description = "Выбор каталога для поиска";
-                if (fbd.ShowDialog() == DialogResult.OK)
+
+                //FolderBrowserDialog fbd = new FolderBrowserDialog();
+                //fbd.Description = "Выбор каталога для поиска";
+                //if (fbd.ShowDialog() == DialogResult.OK)
+                //{
+                //    // корневой каталог рекурсии
+                //    root = fbd.SelectedPath;
+                //    TreeNode TreeRoot = treeView1.Nodes.Add(root);
+                //    recurseFind(root, TreeRoot);
+                //}
+
+                // выбираем директорию и строчные (текстовые) файлы в нем
+                using (var fbd = new FolderBrowserDialog())
                 {
+                    DialogResult result = fbd.ShowDialog();
+
                     // корневой каталог рекурсии
                     root = fbd.SelectedPath;
-                    TreeNode TreeRoot = treeView1.Nodes.Add(root);
-                    recurseFind(root, TreeRoot);
+                    //TreeNode TreeRoot = treeView1.Nodes.Add(root);   
+                    //recurseFind(root, TreeRoot);
+
+                    try
+                    {
+                        //var txtFiles = Directory.EnumerateFiles(root, "*.txt", SearchOption.AllDirectories);
+                        string[] txtFiles = Directory.GetFiles(root, "*.txt", SearchOption.AllDirectories);
+                        this.listBox1.Items.AddRange(txtFiles);
+
+                        foreach (string currentFile in txtFiles)
+                        {
+                            //foreach()
+                            //if (currentFile.Contains())
+                            //string fileName = currentFile.Substring(root.Length + 1);
+                            string fileName = Path.GetFileName(currentFile);
+                            //Directory.(currentFile, Path.Combine(resultPath, fileName));
+                            File.Copy(Path.Combine(currentFile), Path.Combine(resultPath, fileName), true);
+                        }
+                    }
+                    catch (Exception err)
+                    {
+                        Console.WriteLine(err.Message);
+                    }
+
+                    System.Windows.Forms.MessageBox.Show("Files found: " + txtFiles.Count.ToString(), "Message");
+                    
                 }
             }
             catch (Exception ex)
@@ -123,6 +167,15 @@ namespace SysProgrExamRastvorov
                     recurseFind(nodeName, i);
                 }
             }
+        }
+
+        public static void KluchSlova(string stroka, string[] slova) //Вбиваем сюда строку и ключевые слова, заключенные в данный массив
+        {
+            for (int i = 0; i < slova.Length; i++)
+            {
+                if (stroka.Contains(slova[i])) Console.WriteLine(slova[i]);
+            }
+
         }
     }
 }
