@@ -37,24 +37,22 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SysProgrExamRastvorov
-{
-
+{    
     public partial class Form1 : Form
     {
 
         public Form1()
         {
             InitializeComponent();
+            progressBar1.Minimum = 0;
+            // делаем выравнивание в первом столбце по содержимому
+            listView1.Columns[0].Width = -2;
         }
-
-        //List<FileInfo> txtFiles;
+               
         string[] txtFiles;
         string resultPath = "D:\\resultFolder\\";
-        string[] slova = { "contribution", "редуцированная" };
+        string[] slova = { "contribution", "hover" };
         List<string> resultList = new List<string>();
-
-        int maxFiles, currentFiles = 0, maxFolders, currenttFolders = 0;
-
         string root = "";
 
         private void button2_Click(object sender, EventArgs e)
@@ -64,135 +62,120 @@ namespace SysProgrExamRastvorov
 
         private void button1_Click(object sender, EventArgs e)
         {
-            
-
+            // чистим listView
+            listView1.Items.Clear();
             // работаем с файлами и каталогами
             try
             {
-                maxFolders = int.Parse(MaxFoldersBox.Text);
-                maxFiles = int.Parse(MaxFilesBox.Text);
-                currentFiles = currenttFolders = 0;
-                treeView1.Nodes.Clear();
-
-                //FolderBrowserDialog fbd = new FolderBrowserDialog();
-                //fbd.Description = "Выбор каталога для поиска";
-                //if (fbd.ShowDialog() == DialogResult.OK)
-                //{
-                //    // корневой каталог рекурсии
-                //    root = fbd.SelectedPath;
-                //    TreeNode TreeRoot = treeView1.Nodes.Add(root);
-                //    recurseFind(root, TreeRoot);
-                //}
-
-                // выбираем директорию и строчные (текстовые) файлы в нем
+                // выбираем директорию
                 using (var fbd = new FolderBrowserDialog())
                 {
                     DialogResult result = fbd.ShowDialog();
 
-                    // корневой каталог рекурсии
+                    // корневой каталог
                     root = fbd.SelectedPath;
-                    //TreeNode TreeRoot = treeView1.Nodes.Add(root);   
-                    //recurseFind(root, TreeRoot);
-
+                    
                     try
                     {
+                        // выбираем все текстовые файлы из директории и поддиректорий
                         //var txtFiles = Directory.EnumerateFiles(root, "*.txt", SearchOption.AllDirectories);
                         txtFiles = Directory.GetFiles(root, "*.txt", SearchOption.AllDirectories);
-                       
 
+                        // запускаем прогресс баз
+                        progressBar1.Value = 0;                        
+                        progressBar1.Maximum = txtFiles.Count();
+                        
+                        // ищем запрещенные слова, формируем listView и папку с путями запрещенных файлов
                         foreach (string currentFile in txtFiles)
                         {
-                            foreach(string slovo in slova)
-                            {
+                            bool addToResult = false;
+                            foreach (string slovo in slova)
+                            {                               
                                 string[] containsCurrentFile = File.ReadAllLines(currentFile, Encoding.Default);
                                 foreach (string stroka in containsCurrentFile)
-                                {
+                                {                                                                           
+                                    if (stroka.Contains(slovo))
                                     {
-                                        if (stroka.Contains(slovo))
-                                        {
-                                            string fileName = Path.GetFileName(currentFile);
-                                            File.Copy(Path.Combine(currentFile), Path.Combine(resultPath, fileName), true);
-                                            resultList.Add(currentFile);
-                                        }
-                                    }
-                                }
-                                
-                                    
-                            }
-                            
-                        }
+                                        addToResult = true;
 
-                        this.listBox1.Items.AddRange(resultList.ToArray());
+                                        // копируем файл содержащий запрещенные слова в результирующий каталог
+                                        string fileName = Path.GetFileName(currentFile);
+                                        //File.Copy(Path.Combine(currentFile), Path.Combine(resultPath, fileName), true);
+                                        File.Copy(currentFile, resultPath + fileName, true);
+
+                                        // делаем копию скопированного файла
+                                        //string copyFilePath = Path.Combine(resultPath, Path.GetFileNameWithoutExtension(currentFile) + "_copy" + Path.GetExtension(currentFile));
+                                        string copyFilePath = resultPath + Path.GetFileNameWithoutExtension(currentFile) + "_copy" + Path.GetExtension(currentFile);
+                                        //File.Copy(Path.Combine(currentFile), copyFilePath, true);
+                                        File.Copy(currentFile, copyFilePath, true);
+
+                                        // меяем в копии запрещенного файла символы запрещенного слова на звездочки
+                                        string text = File.ReadAllText(copyFilePath, Encoding.Default);
+                                        string zvezdochki = "";
+                                        for (int i = 0; i < slovo.Count(); i++)
+                                        {
+                                            zvezdochki += "*";
+                                        }
+                                        text = text.Replace(slovo, zvezdochki);
+                                        File.WriteAllText(copyFilePath, text);
+                                    }
+                                    
+                                }                                    
+                            }
+                            // добавляем путь к скопированому файлу в список для вывода на экран через listView
+                            if (addToResult)
+                            {
+                                resultList.Add(currentFile);
+                                // выводим список путей к файлам, содержащим запрещенные слова
+                                this.listView1.Items.Add(currentFile);
+                            }                            
+
+                            // наращиваем прогресс бар
+                            progressBar1.Value++;
+                        }
+                       
                     }
                     catch (Exception err)
                     {
-                        Console.WriteLine(err.Message);
+                        //Console.WriteLine(err.Message);
+                        Log.Write(err);
                     }
-
-                    System.Windows.Forms.MessageBox.Show("Files found: " + txtFiles.Length.ToString(), "Message");
                     
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message + "\nили неправильно заполненные данные");
+                Log.Write(ex);
             }
         }
+    }
 
-        Regex reg = new Regex("^<dir>(.*)$");
-
-        void recurseFind(string path, TreeNode node)
+    // класс под лог
+    public class Log
+    {
+        private static object sync = new object();
+        public static void Write(Exception ex)
         {
-            string[] files = { };
-            string[] folders = { };
             try
             {
-                folders = Directory.GetDirectories(path);
-            }
-            catch
-            {
-            }
-            try
-            {
-                files = Directory.GetFiles(path);
-            }
-            catch
-            {
-            }
-            // список каталогов-узлов дерева
-            List<TreeNode> sub = new List<TreeNode>();
-            foreach (string i in folders)
-            {
-                sub.Add(node.Nodes.Add("<dir>" + i));
-            }
-            foreach (string i in files)
-                node.Nodes.Add(i);
-            currenttFolders += folders.Length;
-            currentFiles += files.Length;
-            if (currentFiles >= maxFiles || currenttFolders >= maxFolders)
-            {
-                return;
-            }
-            foreach (TreeNode i in sub)
-            {
-                Match match = reg.Match(i.Text);
-                if (match.Success)
+                // Путь .\\Log
+                string pathToLog = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Log");
+                if (!Directory.Exists(pathToLog))
+                    Directory.CreateDirectory(pathToLog); // Создаем директорию, если нужно
+                string filename = Path.Combine(pathToLog, string.Format("{0}_{1:dd.MM.yyy}.log",
+                AppDomain.CurrentDomain.FriendlyName, DateTime.Now));
+                string fullText = string.Format("[{0:dd.MM.yyy HH:mm:ss.fff}] [{1}.{2}()] {3}\r\n",
+                DateTime.Now, ex.TargetSite.DeclaringType, ex.TargetSite.Name, ex.Message);
+                lock (sync)
                 {
-                    // выбираем группу связанную со скобками
-                    string nodeName = match.Groups[1].Value;
-                    // рекурсивно входим в указанную директорию
-                    recurseFind(nodeName, i);
+                    File.AppendAllText(filename, fullText, Encoding.GetEncoding("Windows-1251"));
                 }
             }
-        }
-
-        public static void KluchSlova(string stroka, string[] slova) //Вбиваем сюда строку и ключевые слова, заключенные в данный массив
-        {
-            for (int i = 0; i < slova.Length; i++)
+            catch
             {
-                if (stroka.Contains(slova[i])) Console.WriteLine(slova[i]);
+                // Перехватываем все и ничего не делаем
             }
-
         }
     }
 }
