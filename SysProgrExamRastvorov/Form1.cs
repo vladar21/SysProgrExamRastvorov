@@ -47,8 +47,11 @@ namespace SysProgrExamRastvorov
             InitializeComponent();
         }
 
-        List<FileInfo> txtFiles;
+        //List<FileInfo> txtFiles;
+        string[] txtFiles;
         string resultPath = "D:\\resultFolder\\";
+        string[] slova = { "contribution", "редуцированная" };
+        List<string> resultList = new List<string>();
 
         int maxFiles, currentFiles = 0, maxFolders, currenttFolders = 0;
 
@@ -94,25 +97,39 @@ namespace SysProgrExamRastvorov
                     try
                     {
                         //var txtFiles = Directory.EnumerateFiles(root, "*.txt", SearchOption.AllDirectories);
-                        string[] txtFiles = Directory.GetFiles(root, "*.txt", SearchOption.AllDirectories);
-                        this.listBox1.Items.AddRange(txtFiles);
+                        txtFiles = Directory.GetFiles(root, "*.txt", SearchOption.AllDirectories);
+                       
 
                         foreach (string currentFile in txtFiles)
                         {
-                            //foreach()
-                            //if (currentFile.Contains())
-                            //string fileName = currentFile.Substring(root.Length + 1);
-                            string fileName = Path.GetFileName(currentFile);
-                            //Directory.(currentFile, Path.Combine(resultPath, fileName));
-                            File.Copy(Path.Combine(currentFile), Path.Combine(resultPath, fileName), true);
+                            foreach(string slovo in slova)
+                            {
+                                string[] containsCurrentFile = File.ReadAllLines(currentFile, Encoding.Default);
+                                foreach (string stroka in containsCurrentFile)
+                                {
+                                    {
+                                        if (stroka.Contains(slovo))
+                                        {
+                                            string fileName = Path.GetFileName(currentFile);
+                                            File.Copy(Path.Combine(currentFile), Path.Combine(resultPath, fileName), true);
+                                            resultList.Add(currentFile);
+                                        }
+                                    }
+                                }
+                                
+                                    
+                            }
+                            
                         }
+
+                        this.listBox1.Items.AddRange(resultList.ToArray());
                     }
                     catch (Exception err)
                     {
                         Console.WriteLine(err.Message);
                     }
 
-                    System.Windows.Forms.MessageBox.Show("Files found: " + txtFiles.Count.ToString(), "Message");
+                    System.Windows.Forms.MessageBox.Show("Files found: " + txtFiles.Length.ToString(), "Message");
                     
                 }
             }
