@@ -29,15 +29,18 @@
         private void InitializeComponent()
         {           
             this.button1 = new System.Windows.Forms.Button();
-            this.listBox1 = new System.Windows.Forms.ListBox();
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.listView1 = new System.Windows.Forms.ListView();
             this.FullPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.SizeFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.qtyStopWords = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(12, 12);
+            this.button1.Location = new System.Drawing.Point(12, 23);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 5;
@@ -45,28 +48,22 @@
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
-            // listBox1
-            // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(12, 53);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(165, 69);
-            this.listBox1.TabIndex = 6;
-            // 
             // progressBar1
             // 
-            this.progressBar1.Location = new System.Drawing.Point(189, 12);
+            this.progressBar1.Location = new System.Drawing.Point(12, 50);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(599, 23);
+            this.progressBar1.Size = new System.Drawing.Size(928, 23);
             this.progressBar1.TabIndex = 7;
             // 
             // listView1
             // 
             this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.FullPath});
-            this.listView1.Location = new System.Drawing.Point(189, 53);
+            this.FullPath,
+            this.SizeFile,
+            this.qtyStopWords});
+            this.listView1.Location = new System.Drawing.Point(12, 79);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(599, 339);
+            this.listView1.Size = new System.Drawing.Size(928, 359);
             this.listView1.TabIndex = 8;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -75,28 +72,62 @@
             // 
             this.FullPath.Text = "FullPath";
             // 
+            // SizeFile
+            // 
+            this.SizeFile.Text = "SizeFile";
+            this.SizeFile.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            // 
+            // qtyStopWords
+            // 
+            this.qtyStopWords.Text = "qtyStopWords";
+            this.qtyStopWords.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
+            // 
+            // textBox1
+            // 
+            this.textBox1.Location = new System.Drawing.Point(116, 23);
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(824, 20);
+            this.textBox1.TabIndex = 9;
+            this.textBox1.Click += new System.EventHandler(this.textBox1_Enter);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(116, 4);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(473, 13);
+            this.label1.TabIndex = 10;
+            this.label1.Text = "Введите, через запятую, список запрещенных слов =>  Нажмите кнопку и выберите пап" +
+    "ку для поиска => Затем, выберите папку для результатов поиска.";
+
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(952, 450);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.progressBar1);
-            this.Controls.Add(this.listBox1);
             this.Controls.Add(this.button1);
             this.Name = "Form1";
             this.Text = "Form1";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
         
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ColumnHeader FullPath;
+        private System.Windows.Forms.ColumnHeader SizeFile;
+        private System.Windows.Forms.ColumnHeader qtyStopWords;
+        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.Label label1;
     }
 }
 
