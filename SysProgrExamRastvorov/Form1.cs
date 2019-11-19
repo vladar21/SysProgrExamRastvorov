@@ -19,10 +19,14 @@
 //По итогам работы программы необходимо вывести результаты работы в
 //элементы пользовательского интерфейса (нужно продумать, какие элементы
 //управления понадобятся).
+
+//Часть, что описана ниже - не сделана, не разобрался с потоками.
+
 //Программа обязательно должна использовать механизмы многопоточности и синхронизации!
 //Программа может быть запущена только в одной копии. Предусмотреть
 //возможность запуска приложения из командной строки без отображения
 //визуального интерфейса.
+
 
 using System;
 using System.Collections.Generic;
@@ -101,7 +105,7 @@ namespace SysProgrExamRastvorov
                         // запускаем прогресс баз
                         progressBar1.Value = 0;                        
                         progressBar1.Maximum = txtFiles.Count();
-                        
+
                         // ищем запрещенные слова, формируем listView и папку с путями запрещенных файлов
                         foreach (string currentFile in txtFiles)
                         {
@@ -150,13 +154,9 @@ namespace SysProgrExamRastvorov
                                 }
                                 try
                                 {
-                                    // добавляем для выбранного слова в файл отчета информацию о частоте его встречи в текущем файле
-                                    // int sum = Convert.ToInt32(slovo[1]) + qtyWordFrequency;
-                                    //int sum = Convert.ToInt32(slova.Where(i => i[0] == slovo).FirstOrDefault()[1]) + qtyWordFrequency;
+                                    // добавляем для выбранного слова в файл отчета информацию о частоте его встречи в текущем файле                                    
                                     int sum = Convert.ToInt32(temp[1]) + qtyWordFrequency;
-                                    //string[] temp = slova.Find(x=>x == slovo);
                                     // находим слово в списке запрещенных слов и меняем значение кол-ва повторов на новое
-                                    //slova.Where(i => i[0] == slovo).FirstOrDefault()[1] = sum.ToString();
                                     slova[i][1] = sum.ToString();
                                 }
                                 catch(Exception err)
@@ -168,7 +168,6 @@ namespace SysProgrExamRastvorov
                             // добавляем путь к скопированому файлу в список для вывода на экран через listView
                             if (addToResult)
                             {
-                                //resultList.Add(currentFile);
                                 // получам размер файла
                                 var fi1 = new FileInfo(currentFile);
 
@@ -176,7 +175,6 @@ namespace SysProgrExamRastvorov
                                 string[] item = { currentFile, (fi1.Length/1000).ToString() + " kB", qtyStopWordsInFile.ToString() };
                                 resultList.Add(item);
                                 // выводим список путей к файлам, содержащим запрещенные слова
-                                //this.listView1.Items.Add(currentFile);
                                 this.listView1.Items.Add(new ListViewItem(item));
                             }                            
 
@@ -207,22 +205,18 @@ namespace SysProgrExamRastvorov
         {
             //DateTime date1 = new DateTime();
             string path = p + "\\report.txt";// + date1.ToString();
-            
-            SortedList<int, string> list1 = new SortedList<int, string>(new DecendingComparer<int>());
-            foreach(string[] l in list)
-            {
-                list1.Add(Convert.ToInt32(l[1]), l[0]);
-            }
+
+            var list1 = from l in list orderby Convert.ToInt32(l[1]) descending select l;
                        
             using (StreamWriter sw = new StreamWriter(path, false, System.Text.Encoding.Default))
             {                
                 string lines = "Статистика по словам:\n\n";
                 sw.WriteLine(lines);
-                lines = "qty\t\tword";
+                lines = " word\t\tqty";
                 sw.WriteLine(lines);
                 foreach (var l in list1)
                 {
-                    lines = Convert.ToString(l.Key) + "\t\t" + l.Value;
+                    lines = l[0] + "\t\t" + l[1];
                     sw.WriteLine(lines);
                 }
                 lines = "\n\nПолные пути файлов, содержащих запрещенные слова со статистикой:";
@@ -237,34 +231,7 @@ namespace SysProgrExamRastvorov
                     ch++;
                 }
             }
-        
-
-            // This text is always added, making the file longer over time
-            // if it is not deleted.
-            string appendText = "This is extra text" + Environment.NewLine;
-            File.AppendAllText(path, appendText, Encoding.UTF8);
-
-            // Open the file to read from.
-            //string[] readText = File.ReadAllLines(path, Encoding.UTF8);
-            //foreach (string s in readText)
-            //{
-            //    Console.WriteLine(s);
-            //}
         }
-        // для сортировки sortedlist по убыванию при формировании списка
-        class DecendingComparer<TKey> : IComparer<int>
-        {
-            public int Compare(int x, int y)
-            {
-                return y.CompareTo(x);
-            }
-        }
-
-        private void textBox1_Enter(object sender, EventArgs e)
-        {
-            textBox1.Clear();
-        }
-
     }
 
     // класс под лог
