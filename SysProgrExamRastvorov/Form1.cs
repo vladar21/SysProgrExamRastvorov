@@ -109,15 +109,17 @@ namespace SysProgrExamRastvorov
                             int qtyStopWordsInFile = 0;
                             
                             bool addToResult = false;
-                            foreach (string slovo in slova[0].Distinct().ToArray())
+                            for (int i=0; i<slova.Count();i++)
                             {
                                 // счетчик частоты слова в файле
                                 int qtyWordFrequency = 0;
                                 // содержимое файла
                                 string[] containsCurrentFile = File.ReadAllLines(currentFile, Encoding.Default);
+                                // текущее запрещенное слово
+                                string[] temp = slova[i];
                                 foreach (string stroka in containsCurrentFile)
                                 {                                                                           
-                                    if (stroka.Contains(slovo))
+                                    if (stroka.Contains(temp[0]))
                                     {
                                         qtyStopWordsInFile++;
                                         qtyWordFrequency++;
@@ -137,11 +139,11 @@ namespace SysProgrExamRastvorov
                                         // меняем в копии запрещенного файла символы запрещенного слова на звездочки
                                         string text = File.ReadAllText(copyFilePath, Encoding.Default);
                                         string zvezdochki = "";
-                                        for (int i = 0; i < slovo.Count(); i++)
+                                        for (int j = 0; j < temp[0].Count(); j++)
                                         {
                                             zvezdochki += "*";
                                         }
-                                        text = text.Replace(slovo, zvezdochki);
+                                        text = text.Replace(temp[0], zvezdochki);
                                         File.WriteAllText(copyFilePath, text);
                                     }
                                     
@@ -149,10 +151,13 @@ namespace SysProgrExamRastvorov
                                 try
                                 {
                                     // добавляем для выбранного слова в файл отчета информацию о частоте его встречи в текущем файле
-                                    int sum = Convert.ToInt32(slovo[1]) + qtyWordFrequency;
+                                    // int sum = Convert.ToInt32(slovo[1]) + qtyWordFrequency;
+                                    //int sum = Convert.ToInt32(slova.Where(i => i[0] == slovo).FirstOrDefault()[1]) + qtyWordFrequency;
+                                    int sum = Convert.ToInt32(temp[1]) + qtyWordFrequency;
                                     //string[] temp = slova.Find(x=>x == slovo);
                                     // находим слово в списке запрещенных слов и меняем значение кол-ва повторов на новое
-                                    slova.Where(i => i[0] == slovo).FirstOrDefault()[1] = sum.ToString();
+                                    //slova.Where(i => i[0] == slovo).FirstOrDefault()[1] = sum.ToString();
+                                    slova[i][1] = sum.ToString();
                                 }
                                 catch(Exception err)
                                 {
@@ -195,23 +200,44 @@ namespace SysProgrExamRastvorov
             }
 
             // формируем файл отчета и записываем его в файл
-            writeReport(resultPath, slova);
+            writeReport(resultPath, slova, resultList);
         }
 
-        public void writeReport(string p, List<string[]> list)
+        public void writeReport(string p, List<string[]> list, List<string[]> result)
         {
             //DateTime date1 = new DateTime();
             string path = p + "\\report.txt";// + date1.ToString();
-            // This text is added only once to the file.
-            if (!File.Exists(path))
+            
+            SortedList<int, string> list1 = new SortedList<int, string>(new DecendingComparer<int>());
+            foreach(string[] l in list)
             {
-                foreach(var l in list)
-                {
-                    var lines = l.ToList();
-                    File.WriteAllLines(path, lines, Encoding.UTF8);
-                } 
-                
+                list1.Add(Convert.ToInt32(l[1]), l[0]);
             }
+                       
+            using (StreamWriter sw = new StreamWriter(path, false, System.Text.Encoding.Default))
+            {                
+                string lines = "Статистика по словам:\n\n";
+                sw.WriteLine(lines);
+                lines = "qty\t\tword";
+                sw.WriteLine(lines);
+                foreach (var l in list1)
+                {
+                    lines = Convert.ToString(l.Key) + "\t\t" + l.Value;
+                    sw.WriteLine(lines);
+                }
+                lines = "\n\nПолные пути файлов, содержащих запрещенные слова со статистикой:";
+                sw.WriteLine(lines);
+                lines = "\n\n#\tSum\tSize\tPath\n\n";
+                sw.WriteLine(lines);
+                int ch = 1;
+                foreach (var l in result)
+                {                   
+                    lines = Convert.ToString(ch) + "\t" + l[2] + "\t" + l[1] + "\t" + l[0];
+                    sw.WriteLine(lines);
+                    ch++;
+                }
+            }
+        
 
             // This text is always added, making the file longer over time
             // if it is not deleted.
@@ -224,6 +250,14 @@ namespace SysProgrExamRastvorov
             //{
             //    Console.WriteLine(s);
             //}
+        }
+        // для сортировки sortedlist по убыванию при формировании списка
+        class DecendingComparer<TKey> : IComparer<int>
+        {
+            public int Compare(int x, int y)
+            {
+                return y.CompareTo(x);
+            }
         }
 
         private void textBox1_Enter(object sender, EventArgs e)
